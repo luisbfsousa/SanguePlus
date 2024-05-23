@@ -1,5 +1,5 @@
 /*-------------------- Tabelas de Pessoas -------------------------- */
-INSERT INTO SanguePlus_Pessoa (Numero,Nome,Sexo,Idade,Contacto)
+INSERT INTO [PROJ_Pessoa] ([Numero],[Nome],[Sexo],[Idade],[Contacto])
 VALUES  
     ('M001', 'Luis Sousa', 'M', 21, 932102312),
     ('M002', 'Vasco Rodrigues', 'M', 22, 910123453),
@@ -22,10 +22,10 @@ VALUES
     ('D004', 'Tatiana Cruz', 'F', 38, 990123456),
     ('D005', 'Sergio Oliveira', 'M', 39, 901234567);
 
-SELECT * FROM SanguePlus_Pessoa;
+SELECT * FROM [PROJ_Pessoa];
 
 /*-------------------- Tabelas de Staff -------------------------- */
-INSERT INTO SanguePlus_Staff (NFuncionario)
+INSERT INTO [PROJ_Staff] ([NFuncionario])
 VALUES  
     ('M001'),
     ('M002'),
@@ -38,10 +38,10 @@ VALUES
     ('E004'),
     ('E005');
 
-SELECT * FROM SanguePlus_Staff;
+SELECT * FROM [PROJ_Staff];
 
 /*-------------------- Tabelas de Enfermeiros -------------------------- */
-INSERT INTO SanguePlus_Enfermeiro (NEnfermeiro)
+INSERT INTO [PROJ_Enfermeiro] ([NEnfermeiro])
 VALUES  
     ('E001'),
     ('E002'),
@@ -49,10 +49,10 @@ VALUES
     ('E004'),
     ('E005');
 
-SELECT * FROM SanguePlus_Enfermeiro;
+SELECT * FROM [PROJ_Enfermeiro];
 
 /*-------------------- Tabelas de Medicos -------------------------- */
-INSERT INTO SanguePlus_Medico (NMedico)
+INSERT INTO [PROJ_Medico] ([NMedico])
 VALUES  
     ('M001'),
     ('M002'),
@@ -60,10 +60,10 @@ VALUES
     ('M004'),
     ('M005');
 
-SELECT * FROM SanguePlus_Medico;
+SELECT * FROM [PROJ_Medico];
 
 /*-------------------- Tabelas de Dadores -------------------------- */
-INSERT INTO SanguePlus_Dador(NDador)
+INSERT INTO [PROJ_Dador]([NDador])
 VALUES
     ('D001'),
     ('D002'),
@@ -71,10 +71,10 @@ VALUES
     ('D004'),
     ('D005');
 
-SELECT * FROM SanguePlus_Dador;
+SELECT * FROM [PROJ_Dador];
 
 /*-------------------- Tabelas de Pacientes -------------------------- */
-INSERT INTO SanguePlus_Paciente(NPaciente)
+INSERT INTO [PROJ_Paciente]([NPaciente])
 VALUES
     ('P001'),
     ('P002'),
@@ -82,10 +82,10 @@ VALUES
     ('P004'),
     ('P005');
 
-SELECT * FROM SanguePlus_Paciente;
+SELECT * FROM [PROJ_Paciente];
     
 /*-------------------- Tabelas de Bolsas -------------------------- */
-INSERT INTO SanguePlus_Bolsa(ID,DataValidade,TipoSangue,Dador,Coletor)
+INSERT INTO [PROJ_Bolsa]([ID],[DataValidade],[TipoSangue],[Dador],[Coletor])
 VALUES
     ('B001', '2022-12-31', 'A+', 'D001', 'E001'),
     ('B002', '2022-12-31', 'B-', 'D002', 'E002'),
@@ -93,10 +93,10 @@ VALUES
     ('B004', '2022-12-31', 'O-', 'D004', 'E004'),
     ('B005', '2022-12-31', 'O+', 'D005', 'E005');
 
-SELECT * FROM SanguePlus_Bolsa;
+SELECT * FROM [PROJ_Bolsa];
 
 /*-------------------- Tabelas de Fichas Medicas -------------------------- */
-INSERT INTO SanguePlus_FichaMedica(NPaciente,TipoSangue,Diagnostico,Tratamento,Emissor)
+INSERT INTO [PROJ_FichaMedica]([NPaciente],[TipoSangue],[Diagnostico],[Tratamento],[Emissor])
 VALUES
     ('P001', 'A+', '', '', 'M001'),
     ('P002', 'B-', '', '', 'M002'),
@@ -104,10 +104,10 @@ VALUES
     ('P004', 'O-', '', '', 'M004'),
     ('P005', 'O+', '', '', 'M005');
 
-SELECT * FROM SanguePlus_FichaMedica;
+SELECT * FROM [PROJ_FichaMedica];
 
 /*-------------------- Tabelas de Laboratorio -------------------------- */
-INSERT INTO SanguePlus_Laboratorio(IDBolsa,Numero,HIV,Colesterol)
+INSERT INTO [PROJ_Laboratorio]([IDBolsa],[Numero],[HIV],[Colesterol])
 VALUES
     ('B001', 1, 'Negativo', 200),
     ('B002', 2, 'Negativo', 180),
@@ -115,10 +115,10 @@ VALUES
     ('B004', 4, 'Negativo', 210),
     ('B005', 5, 'Negativo', 190);
 
-SELECT * FROM SanguePlus_Laboratorio;
+SELECT * FROM [PROJ_Laboratorio];
 
 /*-------------------- Tabelas de Cartoes Dador -------------------------- */
-INSERT INTO SanguePlus_CartaoDador(NDador,Nome,TipoSangue,EntidadeFornecedor)
+INSERT INTO [PROJ_CartaoDador]([NDador],[Nome],[TipoSangue],[EntidadeFornecedor])
 VALUES
     ('D001', 'Joao Cruz', 'A+', ''),
     ('D002', 'Sofia Almeida', 'B-', ''),
@@ -126,10 +126,10 @@ VALUES
     ('D004', 'Tatiana Cruz', 'O-', ''),
     ('D005', 'Sergio Oliveira', 'O+', '');
 
-SELECT * FROM SanguePlus_CartaoDador;
+SELECT * FROM [PROJ_CartaoDador];
 
 /*-------------------- Tabelas de Clinica -------------------------- */
-INSERT INTO SanguePlus_Clinica (NIF,Nome,Morada,Contacto,NumeroCliente)
+INSERT INTO [PROJ_Clinica] ([NIF],[Nome],[Morada],[Contacto],[NumeroCliente])
 VALUES 
     ('', '', '', '', ''),
     ('', '', '', '', ''),
@@ -137,4 +137,4 @@ VALUES
     ('', '', '', '', ''),
     ('', '', '', '', '');
 
-SELECT * FROM SanguePlus_Clinica;
+SELECT * FROM [PROJ_Clinica];
