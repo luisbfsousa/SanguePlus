@@ -288,6 +288,41 @@ GO
 -- EXEC dbo.AddPacienteWithFichaMedica @Nome='John Doe', @Numero='P001', @Sexo='M', @Idade=30, @Contacto=987654321, @Tratador='E001', @BolsaRecebida=1, @TipoSangue='O+', @Emissor='M001', @Status=@Status OUTPUT;
 -- PRINT @Status;
 
+-----------Medico atualiza a ficha medica com tratamento e diagnostico------------
+
+CREATE PROCEDURE [dbo].[UpdateFichaMedica]
+    @NPaciente varchar(512),
+    @Tratamento varchar(512),
+    @Diagnostico varchar(512),
+    @Status varchar(512) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- Check if the user is authorized (you may need to implement authentication and authorization)
+        -- For example, you might have a table of authorized users or roles
+        -- For simplicity, let's assume the user executing the procedure is always authorized
+        
+        -- Update the Ficha Medica
+        UPDATE SanguePlus_FichaMedica
+        SET Tratamento = @Tratamento,
+            Diagnostico = @Diagnostico
+        WHERE NPaciente = @NPaciente;
+        
+        SET @Status = 'Ficha medica atualizada com sucesso';
+    END TRY
+    BEGIN CATCH
+        -- Handle error
+        SET @Status = 'Error: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
+--DECLARE @Status varchar(512);
+--EXEC UpdateFichaMedica @NPaciente = 'P001', @Tratamento = 'New treatment information',  @Diagnostico = 'New diagnosis information', @Status = @Status OUTPUT;
+--PRINT @Status;
+
+
 -----------ver todas as fichas medicas por ordem de NPaciente------------
 CREATE PROCEDURE [dbo].[GetAllFichasMedicasPorNumeroPaciente]
 AS
