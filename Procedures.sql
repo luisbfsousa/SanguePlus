@@ -32,7 +32,6 @@ BEGIN
                 DECLARE @TipoPessoa varchar(1) = LEFT(@Numero, 1);
                 INSERT INTO SanguePlus_Pessoa (Nome, Numero, Sexo, Idade, Contacto)
                 VALUES (@Nome, @Numero, @Sexo, @Idade, @Contacto);
-                
                 IF @TipoPessoa = 'E'
                 BEGIN
                     INSERT INTO SanguePlus_Staff (NFuncionario)
@@ -46,8 +45,8 @@ BEGIN
                     INSERT INTO SanguePlus_Staff (NFuncionario)
                     VALUES (@Numero);
 
-                    INSERT INTO SanguePlus_Medico (NMedico)
-                    VALUES (@Numero);
+                    INSERT INTO SanguePlus_Medico (NMedico, PassMed)
+                    VALUES (@Numero, NULL);
                 END
                 ELSE IF @TipoPessoa = 'D'
                 BEGIN
@@ -169,7 +168,7 @@ CREATE PROCEDURE [dbo].[RegistoDador_CartaoDador]
     @Idade int,
     @Contacto int,
     @TipoSangue varchar(512),
-    @EntidadeFornecedor int,
+    @EntidadeFornecedor varchar(512),
     @Status varchar(512) OUTPUT
 AS
 BEGIN
@@ -219,7 +218,7 @@ BEGIN
         SET @Status = 'Erro ' + ERROR_MESSAGE();
     END CATCH
 END
-GO
+GO  --corrigir EntidadeFornecedora!!!!!
 -- DECLARE @Status varchar(512);
 -- EXEC dbo.RegistoDador_CartaoDador @Nome='Kelvin', @Numero='D1001', @Sexo='M', @Idade=25, @Contacto=123456789, @TipoSangue='A+', @EntidadeFornecedor='Sangue+', @Status=@Status OUTPUT;
 -- PRINT @Status;
@@ -247,37 +246,16 @@ BEGIN
             SET @Status = 'Numero invalido. Formarto valido [Pxxxx]';
             RETURN;
         END
-
         IF NOT EXISTS (SELECT 1 FROM SanguePlus_Pessoa WHERE Numero = @Numero)
         BEGIN
             INSERT INTO SanguePlus_Pessoa (Nome, Numero, Sexo, Idade, Contacto)
             VALUES (@Nome, @Numero, @Sexo, @Idade, @Contacto);
         END
-        ELSE
-        BEGIN
-            SET @Status = 'A pessoa ja existe';
-            RETURN;
-        END
-
         IF NOT EXISTS (SELECT 1 FROM SanguePlus_Paciente WHERE NPaciente = @Numero)
         BEGIN
-            IF EXISTS (SELECT 1 FROM SanguePlus_Bolsa WHERE ID = @BolsaRecebida)
-            BEGIN
-                INSERT INTO SanguePlus_Paciente (NPaciente, Tratador, BolsaRecebida)
-                VALUES (@Numero, @Tratador, @BolsaRecebida);
-            END
-            ELSE
-            BEGIN
-                SET @Status = 'A bolsa de sangue não existe';
-                RETURN;
-            END
+            INSERT INTO SanguePlus_Paciente (NPaciente, Tratador, BolsaRecebida)
+            VALUES (@Numero, @Tratador, @BolsaRecebida);
         END
-        ELSE
-        BEGIN
-            SET @Status = 'O paciente ja existe';
-            RETURN;
-        END
-
         IF NOT EXISTS (SELECT 1 FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero)
         BEGIN
             INSERT INTO SanguePlus_FichaMedica (NPaciente, TipoSangue, Diagnostico, Tratamento, Emissor)
@@ -286,7 +264,8 @@ BEGIN
         END
         ELSE
         BEGIN
-            SET @Status = 'A ficha medica ja existe';
+            SET @Status = 'O paciente ja existe';
+            RETURN;
         END
     END TRY
     BEGIN CATCH
@@ -296,7 +275,7 @@ BEGIN
 END
 GO
 -- DECLARE @Status varchar(512);
--- EXEC dbo.RegistoPaciente_FichaMedica @Nome='Fatima', @Numero='P1112', @Sexo='M', @Idade=30, @Contacto=987654321, @Tratador='E001', @BolsaRecebida='B001', @TipoSangue='O+', @Emissor='M001', @Status=@Status OUTPUT;
+--eXEC dbo.RegistoPaciente_FichaMedica @Nome='---------', @Numero='P2322', @Sexo='M', @Idade=30, @Contacto=987654321, @Tratador='E0001', @BolsaRecebida='B0001', @TipoSangue='O+', @Emissor='M0001', @Status=@Status OUTPUT;
 -- PRINT @Status;
 
 -----------Ver todas as fichas-----------
@@ -308,6 +287,17 @@ BEGIN
 END
 GO
 -- EXEC dbo.VerFichaMedica;
+
+-----------Ver Pacientes-----------
+CREATE PROCEDURE [dbo].[VerPacientes]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM SanguePlus_Paciente;
+END
+GO
+-- EXEC dbo.VerPacientes;
+
 
 -----------ver todas as fichas medicas por ordem de NPaciente-----------
 CREATE PROCEDURE [dbo].[FichaMedica_NPaciente]
@@ -371,6 +361,15 @@ END
 GO
 -- EXEC dbo.VerEnfermeiros;
 
+CREATE PROCEDURE [dbo].[VerMedicosPassword]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT * FROM SanguePlus_Medico;
+END
+GO
+-- EXEC dbo.VerMedicosPassword;
+
 CREATE PROCEDURE [dbo].[VerStaff]
 AS
 BEGIN
@@ -379,3 +378,88 @@ BEGIN
 END
 GO
 -- EXEC dbo.VerStaff;
+
+-----------Definir Password do medico-----------
+CREATE PROCEDURE [dbo].[RegistarPassword]
+    @NMedico varchar(512),
+    @PassMed varchar(512),
+    @Status varchar(512) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        IF EXISTS (SELECT 1 FROM SanguePlus_Medico WHERE NMedico = @NMedico)
+        BEGIN
+            IF (SELECT PassMed FROM SanguePlus_Medico WHERE NMedico = @NMedico) IS NULL
+            BEGIN
+                UPDATE SanguePlus_Medico
+                SET PassMed = @PassMed
+                WHERE NMedico = @NMedico;
+                SET @Status = 'Password registada';
+            END
+            ELSE
+            BEGIN
+                SET @Status = 'O Medico ja tem password';
+            END
+        END
+        ELSE
+        BEGIN
+            SET @Status = 'Medico Inexistente';
+        END
+    END TRY
+    BEGIN CATCH
+        -- Handle errors
+        SET @Status = 'Erro: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+--DECLARE @Status varchar(512);
+--EXEC dbo.RegistarPassword @NMedico='M1001', @PassMed='NewSecurePass123', @Status=@Status OUTPUT;
+--PRINT @Status;
+
+-----------Completar Ficha Por Password-----------
+CREATE PROCEDURE [dbo].[AtualizarFichaMedica]
+    @NMedico varchar(512),
+    @PassMed varchar(512),
+    @NPaciente varchar(512),
+    @Diagnostico varchar(512) = NULL,
+    @Tratamento varchar(512) = NULL,
+    @Status varchar(512) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (SELECT 1 FROM SanguePlus_Medico WHERE NMedico = @NMedico AND PassMed = @PassMed)
+    BEGIN
+        IF EXISTS (
+            SELECT 1 
+            FROM SanguePlus_FichaMedica 
+            WHERE NPaciente = @NPaciente 
+            AND Emissor = @NMedico
+        )
+        BEGIN
+            BEGIN TRY
+                -- Update the medical record
+                UPDATE SanguePlus_FichaMedica
+                SET Diagnostico = ISNULL(@Diagnostico, Diagnostico),
+                    Tratamento = ISNULL(@Tratamento, Tratamento)
+                WHERE NPaciente = @NPaciente;
+                SET @Status = 'Ficha Medica atualizada com sucesso.';
+            END TRY
+            BEGIN CATCH
+                SET @Status = 'Erro: ' + ERROR_MESSAGE();
+            END CATCH
+        END
+        ELSE
+        BEGIN
+            SET @Status = 'O Medico nao esta autorizado a atualizar a Ficha Medica do paciente.';
+        END
+    END
+    ELSE
+    BEGIN
+        SET @Status = 'Credenciais invalidas.';
+    END
+END
+GO
+-- DECLARE @Status varchar(512);
+-- EXEC dbo.AtualizarFichaMedica @NMedico = 'M0001', @PassMed = 'IamJoseMourinho', @NPaciente = 'P0001', @Diagnostico = '??????', @Tratamento = '????', @Status = @Status OUTPUT;
+-- PRINT @Status;
