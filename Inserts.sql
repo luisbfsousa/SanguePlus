@@ -56,9 +56,9 @@ INSERT INTO SanguePlus_Medico (NMedico,PassMed)
 VALUES  
     ('M0001','IamJoseMourinho'),
     ('M0002','IamDiogoCarvalho'),
-    ('M0003','IamTiagoSimoes'),
+    ('M0003',''),
     ('M0004','IamJustATest'),
-    ('M0005','IamFullOfBD');
+    ('M0005','');
 
 SELECT * FROM SanguePlus_Medico;
 
@@ -100,9 +100,9 @@ INSERT INTO SanguePlus_FichaMedica (NPaciente, TipoSangue, Diagnostico, Tratamen
 VALUES
     ('P0001', 'A+', 'Queimaduras', 'Uma Bolsa Sangue', 'M0001'),
     ('P0002', 'B-', 'Hemorragia', 'Uma Bolsa Sangue', 'M0002'),
-    ('P0003', 'AB+', 'Perna Partida', 'Duas Bolsas Sangue', 'M0003'),
-    ('P0004', 'O-', 'Tomou demasiada viagra', 'Mais vale tirar o sangue', 'M0004'),
-    ('P0005', 'O+', 'Atraso Mental', 'Uma bolsa sangue', 'M0005');
+    ('P0003', 'AB+', 'Tomou demasiada viagra', 'Mais vale tirar o sangue', 'M0003'),
+    ('P0004', 'O-', '', '', 'M0004'),
+    ('P0005', 'O+', '', '', 'M0005');
 
 SELECT * FROM SanguePlus_FichaMedica;   -----------vazia
 
