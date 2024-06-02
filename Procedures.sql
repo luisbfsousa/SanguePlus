@@ -467,7 +467,6 @@ BEGIN
         )
         BEGIN
             BEGIN TRY
-                -- Update the medical record
                 UPDATE SanguePlus_FichaMedica
                 SET Diagnostico = ISNULL(@Diagnostico, Diagnostico),
                     Tratamento = ISNULL(@Tratamento, Tratamento)
