@@ -90,28 +90,38 @@ BEGIN
         BEGIN
             DELETE FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Numero;
         END
-        ELSE
+        ELSE IF EXISTS (SELECT 1 FROM SanguePlus_Dador WHERE NDador = @Numero)
         BEGIN
-            DELETE FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero;
-            DELETE FROM SanguePlus_Paciente WHERE NPaciente = @Numero;
-            DELETE FROM SanguePlus_Laboratorio WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Coletor = @Numero OR Dador = @Numero);
-            DELETE FROM SanguePlus_Bolsa WHERE Coletor = @Numero;
+            DELETE FROM SanguePlus_FichaMedica
+            WHERE NPaciente IN (SELECT NPaciente FROM SanguePlus_Paciente WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @Numero));
+            DELETE FROM SanguePlus_Paciente 
+            WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @Numero);
+            DELETE FROM SanguePlus_Laboratorio 
+            WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @Numero);
             DELETE FROM SanguePlus_Bolsa WHERE Dador = @Numero;
             DELETE FROM SanguePlus_CartaoDador WHERE NDador = @Numero;
             DELETE FROM SanguePlus_Dador WHERE NDador = @Numero;
             DELETE FROM SanguePlus_Staff WHERE NFuncionario = @Numero;
             DELETE FROM SanguePlus_Pessoa WHERE Numero = @Numero;
         END
-        IF @@ROWCOUNT = 0
-        BEGIN
-            ROLLBACK TRANSACTION;
-            SET @Status = 'Pessoa não encontrada';
-        END
         ELSE
         BEGIN
-            COMMIT TRANSACTION;
-            SET @Status = 'Pessoa removida';
+            IF EXISTS (SELECT 1 FROM SanguePlus_Pessoa WHERE Numero = @Numero)
+            BEGIN
+                DELETE FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero;
+                DELETE FROM SanguePlus_Paciente WHERE NPaciente = @Numero;
+                DELETE FROM SanguePlus_Staff WHERE NFuncionario = @Numero;
+                DELETE FROM SanguePlus_Pessoa WHERE Numero = @Numero;
+            END
+            ELSE
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SET @Status = 'Pessoa não encontrada';
+                RETURN;
+            END
         END
+        COMMIT TRANSACTION;
+        SET @Status = 'Pessoa removida';
     END TRY
     BEGIN CATCH
         ROLLBACK TRANSACTION;
@@ -227,50 +237,61 @@ GO  --corrigir EntidadeFornecedora!!!!!
 -- PRINT @Status;
 
 -----------Adiocionar Paciente e ficha medica-----------
-CREATE PROCEDURE [dbo].[RemoverPessoa]
-    @Numero varchar(255),
+CREATE PROCEDURE [dbo].[RegistoPaciente_Ficha]
+    @Nome varchar(512),
+    @Numero varchar(512),
+    @Sexo varchar(512),
+    @Idade int,
+    @Contacto int,
+    @Tratador varchar(512),
+    @BolsaRecebida varchar(512),
+    @TipoSangue varchar(512),
+    @Diagnostico varchar(512) = NULL,
+    @Tratamento varchar(512) = NULL,
+    @Emissor varchar(512),
     @Status varchar(512) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-
     BEGIN TRY
-        BEGIN TRANSACTION;
-
-        IF EXISTS (SELECT 1 FROM SanguePlus_Medico WHERE NMedico = @Numero)
+        IF LEFT(@Numero, 1) != 'P' OR LEN(@Numero) != 5 OR ISNUMERIC(SUBSTRING(@Numero, 2, LEN(@Numero) - 1)) = 0
         BEGIN
-            DELETE FROM SanguePlus_Medico WHERE NMedico = @Numero;
+            SET @Status = 'Numero invalido. Formato valido [Pxxxx]';
+            RETURN;
         END
-        ELSE IF EXISTS (SELECT 1 FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Numero)
+        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Tratador)
         BEGIN
-            DELETE FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Numero;
+            SET @Status = 'Tratador não encontrado';
+            RETURN;
+        END
+        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Bolsa WHERE ID = @BolsaRecebida)
+        BEGIN
+            SET @Status = 'BolsaRecebida não encontrada';
+            RETURN;
+        END
+        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Pessoa WHERE Numero = @Numero)
+        BEGIN
+            INSERT INTO SanguePlus_Pessoa (Nome, Numero, Sexo, Idade, Contacto)
+            VALUES (@Nome, @Numero, @Sexo, @Idade, @Contacto);
+        END
+        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Paciente WHERE NPaciente = @Numero)
+        BEGIN
+            INSERT INTO SanguePlus_Paciente (NPaciente, Tratador, BolsaRecebida)
+            VALUES (@Numero, @Tratador, @BolsaRecebida);
+        END
+        IF NOT EXISTS (SELECT 1 FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero)
+        BEGIN
+            INSERT INTO SanguePlus_FichaMedica (NPaciente, TipoSangue, Diagnostico, Tratamento, Emissor)
+            VALUES (@Numero, @TipoSangue, ISNULL(@Diagnostico, ''), ISNULL(@Tratamento, ''), @Emissor);
+            SET @Status = 'Paciente registado e Ficha medica criada';
         END
         ELSE
         BEGIN
-            DELETE FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero;
-            DELETE FROM SanguePlus_Paciente WHERE NPaciente = @Numero;
-            DELETE FROM SanguePlus_Laboratorio WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Coletor = @Numero OR Dador = @Numero);
-            DELETE FROM SanguePlus_Bolsa WHERE Coletor = @Numero;
-            DELETE FROM SanguePlus_Bolsa WHERE Dador = @Numero;
-            DELETE FROM SanguePlus_CartaoDador WHERE NDador = @Numero;
-            DELETE FROM SanguePlus_Dador WHERE NDador = @Numero;
-            DELETE FROM SanguePlus_Staff WHERE NFuncionario = @Numero;
-            DELETE FROM SanguePlus_Pessoa WHERE Numero = @Numero;
-        END
-
-        IF @@ROWCOUNT = 0
-        BEGIN
-            ROLLBACK TRANSACTION;
-            SET @Status = 'Pessoa não encontrada';
-        END
-        ELSE
-        BEGIN
-            COMMIT TRANSACTION;
-            SET @Status = 'Pessoa removida';
+            SET @Status = 'O paciente ja existe';
+            RETURN;
         END
     END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
         SET @Status = 'Erro: ' + ERROR_MESSAGE();
     END CATCH
 END
@@ -402,7 +423,7 @@ BEGIN
             IF EXISTS (SELECT 1 FROM SanguePlus_Medico WHERE NMedico = @NMedico AND (PassMed IS NULL OR PassMed = ''))
             BEGIN
                 UPDATE SanguePlus_Medico
-                SET PassMed = @PassMed
+                SET PassMed = HASHBYTES('SHA2_256', @PassMed)
                 WHERE NMedico = @NMedico;
                 SET @Status = 'Password registada';
             END
@@ -436,7 +457,7 @@ CREATE PROCEDURE [dbo].[AtualizarFicha]
 AS
 BEGIN
     SET NOCOUNT ON;
-    IF EXISTS (SELECT 1 FROM SanguePlus_Medico WHERE NMedico = @NMedico AND PassMed = @PassMed)
+    IF EXISTS (SELECT 1 FROM SanguePlus_Medico WHERE NMedico = @NMedico AND PassMed = HASHBYTES('SHA2_256', @PassMed))
     BEGIN
         IF EXISTS (
             SELECT 1 
@@ -472,7 +493,7 @@ GO
 -- EXEC dbo.AtualizarFicha @NMedico = 'M0001', @PassMed = 'IamJoseMourinho', @NPaciente = 'P0001', @Diagnostico = '??????', @Tratamento = '????', @Status = @Status OUTPUT;
 -- PRINT @Status;
 
------------???-----------
+-----------verpessoas-----------
 CREATE PROCEDURE [dbo].[VerPessoas_Pacientes]
     @PessoaNum varchar(50)
 AS
@@ -487,3 +508,43 @@ BEGIN
 END
 GO
 --exec [dbo].[VerPessoas_Pacientes] @PessoaNum = 'Pxxxx'
+
+-----------Registar valores nas bolsas-----------
+CREATE PROCEDURE RegistarResultados
+    @IDBolsa varchar(50),
+    @HIV varchar(50) = NULL,
+    @Colesterol int = NULL
+AS
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM SanguePlus_Laboratorio WHERE IDBolsa = @IDBolsa)
+    BEGIN
+        SELECT 'Bolsa Inexistente' AS Message;
+        RETURN;
+    END
+
+    IF @HIV IS NOT NULL AND @HIV NOT IN ('Positivo', 'Negativo')
+    BEGIN
+        SELECT 'Resultados possíveis,  "Postivo" ou "Negativo"' AS Message;
+        RETURN;
+    END
+
+    IF @Colesterol IS NOT NULL AND (@Colesterol < 0 OR @Colesterol > 300)
+    BEGIN
+        SELECT 'Valores válidos para o colestrol [0..300]' AS Message;
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM SanguePlus_Laboratorio WHERE IDBolsa = @IDBolsa AND (HIV IS NULL OR HIV = '' OR Colesterol IS NULL))
+    BEGIN
+        UPDATE SanguePlus_Laboratorio
+        SET HIV = ISNULL(@HIV, HIV),
+            Colesterol = ISNULL(@Colesterol, Colesterol)
+        WHERE IDBolsa = @IDBolsa;
+    END
+    ELSE
+    BEGIN
+        SELECT 'Resultados finais, não é possível mudar' AS Message;
+    END
+END
+
+--exec RegistarResultados @IDBolsa = 'B0003', @HIV = 'Negativo', @Colesterol = 200;

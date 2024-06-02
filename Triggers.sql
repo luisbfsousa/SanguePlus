@@ -16,17 +16,21 @@ INSTEAD OF DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
+
     DECLARE @Numero varchar(255);
     DECLARE @NewEmissor varchar(255);
+
     SELECT @Numero = NMedico FROM deleted;
     SELECT TOP 1 @NewEmissor = NMedico
     FROM SanguePlus_Medico
     WHERE NMedico != @Numero;
+
     IF @NewEmissor IS NULL
     BEGIN
         RAISERROR('Erro: É preciso pelo menos um Medico registado', 16, 1);
         RETURN;
     END
+
     BEGIN TRY
         BEGIN TRANSACTION;
         UPDATE SanguePlus_FichaMedica SET Emissor = @NewEmissor WHERE Emissor = @Numero;
@@ -48,17 +52,21 @@ INSTEAD OF DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
+
     DECLARE @Numero varchar(255);
     DECLARE @NewEnfermeiro varchar(255);
+
     SELECT @Numero = NEnfermeiro FROM deleted;
     SELECT TOP 1 @NewEnfermeiro = NEnfermeiro
     FROM SanguePlus_Enfermeiro
     WHERE NEnfermeiro != @Numero;
+
     IF @NewEnfermeiro IS NULL
     BEGIN
         RAISERROR('Erro: É preciso pelo menos um Enfermeiro registado', 16, 1);
         RETURN;
     END
+
     BEGIN TRY
         BEGIN TRANSACTION;
         UPDATE SanguePlus_Paciente SET Tratador = @NewEnfermeiro WHERE Tratador = @Numero;
@@ -102,15 +110,20 @@ INSTEAD OF DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
+
     DECLARE @NDador varchar(255);
+
     SELECT @NDador = NDador FROM deleted;
+
     BEGIN TRY
         BEGIN TRANSACTION;
         UPDATE SanguePlus_Paciente 
         SET BolsaRecebida = NULL 
         WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @NDador);
+
         DELETE FROM SanguePlus_Laboratorio 
         WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @NDador);
+
         DELETE FROM SanguePlus_Bolsa WHERE Dador = @NDador;
         DELETE FROM SanguePlus_CartaoDador WHERE NDador = @NDador;
         DELETE FROM SanguePlus_Dador WHERE NDador = @NDador;

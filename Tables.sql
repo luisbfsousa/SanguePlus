@@ -83,8 +83,8 @@ CREATE TABLE SanguePlus_FichaMedica(
 GO
 
 CREATE TABLE SanguePlus_Laboratorio(
-    HIV varchar(512) NOT NULL,
-    Colesterol varchar(512) NOT NULL,
+    HIV varchar(512) NULL,
+    Colesterol varchar(512) NULL,
     Numero int NOT NULL,
     IDBolsa varchar(512) NOT NULL,
     PRIMARY KEY (IDBolsa),
