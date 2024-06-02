@@ -13,6 +13,7 @@ DROP VIEW LaboratorioBloodBagInfo;
 DROP VIEW VerMedicos;
 DROP VIEW VisaoBolsasTestadas;
 
+
 DROP TRIGGER TirarMedicoDaFicha;
 DROP TRIGGER MEDICCC;
 DROP TRIGGER NURSEEE;
@@ -26,3 +27,4 @@ SELECT @sql += 'DROP PROCEDURE ' + QUOTENAME(SCHEMA_NAME(schema_id)) + '.' + QUO
 FROM sys.procedures;
 
 EXEC sp_executesql @sql;
+GO

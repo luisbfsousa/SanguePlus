@@ -98,12 +98,30 @@ GO
 
 CREATE TRIGGER ApagarDador
 ON SanguePlus_Dador
-AFTER DELETE
+INSTEAD OF DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
-    UPDATE SanguePlus_Paciente SET BolsaRecebida = NULL WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador IN (SELECT NDador FROM deleted));
-    DELETE FROM SanguePlus_Bolsa WHERE Dador IN (SELECT NDador FROM deleted);
-    DELETE FROM SanguePlus_Dador WHERE NDador IN (SELECT NDador FROM deleted);
+    DECLARE @NDador varchar(255);
+    SELECT @NDador = NDador FROM deleted;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        UPDATE SanguePlus_Paciente 
+        SET BolsaRecebida = NULL 
+        WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @NDador);
+        DELETE FROM SanguePlus_Laboratorio 
+        WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @NDador);
+        DELETE FROM SanguePlus_Bolsa WHERE Dador = @NDador;
+        DELETE FROM SanguePlus_CartaoDador WHERE NDador = @NDador;
+        DELETE FROM SanguePlus_Dador WHERE NDador = @NDador;
+        DELETE FROM SanguePlus_Staff WHERE NFuncionario = @NDador;
+        DELETE FROM SanguePlus_Pessoa WHERE Numero = @NDador;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
 END
 GO

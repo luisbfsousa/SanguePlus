@@ -99,22 +99,22 @@ VALUES
     ('M0002', 'Vasco Rodrigues', 'Masculino', 22, 910123453),
     ('M0003', 'Valeria Teixeira', 'Feminino', 23, 912223408),
     ('M0004', 'Daniela Dias', 'Feminino', 24, 923928321),
-    ('M0005', 'Goncalo Oliveira', 'Masculino', 25, 952832842),
+    ('M0005', 'Goncalo Oliveira', 'Masculino', 21, 952832842),
     ('E0001', 'Guilherme Santos', 'Masculino', 26, 913913293),
     ('E0002', 'Irina Osorio', 'Feminino', 27, 987462231),
     ('E0003', 'Carolina Faustino', 'Feminino', 28, 987654321),
     ('E0004', 'Laura Teixeira', 'Feminino', 29, 936583721),
-    ('E0005', 'Tiago Simoes', 'Masculino', 20, 934585732),
-    ('P0001', 'Eduardo Gomes', 'Masculino', 30, 912345678),
+    ('E0005', 'Tiago Simoes', 'Masculino', 36, 934585732),
+    ('P0001', 'Eduardo Gomes', 'Masculino', 31, 912345678),
     ('P0002', 'Beatriz Oliveira', 'Feminino', 31, 923456789),
     ('P0003', 'Goncalo Borges', 'Masculino', 32, 934567890),
-    ('P0004', 'Viviana Silva', 'Feminino', 33, 945678901),
+    ('P0004', 'Viviana Silva', 'Feminino', 34, 945678901),
     ('P0005', 'Pedro Cruz', 'Masculino', 34, 956789012),
-    ('D0001', 'Joao Cruz', 'Masculino', 35, 967890123),
+    ('D0001', 'Joao Cruz', 'Masculino', 34, 967890123),
     ('D0002', 'Sofia Almeida', 'Feminino', 36, 978901234),
-    ('D0003', 'Diogo Costa', 'Masculino', 37, 989012345),
-    ('D0004', 'Tatiana Cruz', 'Feminino', 38, 990123456),
-    ('D0005', 'Sergio Oliveira', 'Masculino', 39, 901234567);
+    ('D0003', 'Diogo Costa', 'Masculino', 40, 989012345),
+    ('D0004', 'Tatiana Cruz', 'Feminino', 40, 990123456),
+    ('D0005', 'Luis Oliveira', 'Masculino', 39, 901234567);
 
 SELECT * FROM SanguePlus_Pessoa;
 
@@ -170,11 +170,11 @@ SELECT * FROM SanguePlus_Dador;
 /*-------------------- Tabelas de Bolsas -------------------------- */
 INSERT INTO SanguePlus_Bolsa (ID, DataValidade, TipoSangue, Dador, Coletor)
 VALUES
-    ('B0001', '2022-12-31', 'A+', 'D0001', 'E0001'),
-    ('B0002', '2022-12-31', 'B-', 'D0002', 'E0002'),
-    ('B0003', '2022-12-31', 'AB+', 'D0003', 'E0003'),
-    ('B0004', '2022-12-31', 'O-', 'D0004', 'E0004'),
-    ('B0005', '2022-12-31', 'O+', 'D0005', 'E0005');
+    ('B0001', '2024-05-27', 'A+', 'D0001', 'E0001'),
+    ('B0002', '2024-05-27', 'B-', 'D0002', 'E0002'),
+    ('B0003', '2024-05-27', 'AB+', 'D0003', 'E0003'),
+    ('B0004', '2024-05-27', 'O-', 'D0004', 'E0004'),
+    ('B0005', '2024-05-27', 'A+', 'D0005', 'E0005');
 
 SELECT * FROM SanguePlus_Bolsa;
 
@@ -192,8 +192,8 @@ SELECT * FROM SanguePlus_Paciente;      ------------vazia
 /*-------------------- Tabelas de Fichas Medicas -------------------------- */
 INSERT INTO SanguePlus_FichaMedica (NPaciente, TipoSangue, Diagnostico, Tratamento, Emissor)
 VALUES
-    ('P0001', 'A+', '', '', 'M0001'),
-    ('P0002', 'B-', '', '', 'M0002'),
+    ('P0001', 'A+', 'Queimadura 2º Grau', 'Dar Ricina', 'M0001'),
+    ('P0002', 'B-', 'Pé dormente', 'Por em coma', 'M0002'),
     ('P0003', 'AB+', '', '', 'M0003'),
     ('P0004', 'O-', '', '', 'M0004'),
     ('P0005', 'O+', '', '', 'M0005');
@@ -204,7 +204,7 @@ SELECT * FROM SanguePlus_FichaMedica;   -----------vazia
 INSERT INTO SanguePlus_Laboratorio(IDBolsa,Numero,HIV,Colesterol)
 VALUES
     ('B0001', 1, 'Negativo', 200),
-    ('B0002', 2, 'Negativo', 180),
+    ('B0002', 2, 'Negativo', 190),
     ('B0003', 3, 'Positivo', 220),
     ('B0004', 4, 'Negativo', 210),
     ('B0005', 5, 'Negativo', 190);
@@ -218,7 +218,7 @@ VALUES
     ('D0002', 'Sofia Almeida', 'B-', 'Sangue+'),
     ('D0003', 'Diogo Costa', 'AB+', 'Sangue+'),
     ('D0004', 'Tatiana Cruz', 'O-', 'Sangue+'),
-    ('D0005', 'Sergio Oliveira', 'O+', 'Sangue+');
+    ('D0005', 'Joao Oliveira', 'A+', 'Clinica');
 
 SELECT * FROM SanguePlus_CartaoDador;
 GO
@@ -315,28 +315,38 @@ BEGIN
         BEGIN
             DELETE FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Numero;
         END
-        ELSE
+        ELSE IF EXISTS (SELECT 1 FROM SanguePlus_Dador WHERE NDador = @Numero)
         BEGIN
-            DELETE FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero;
-            DELETE FROM SanguePlus_Paciente WHERE NPaciente = @Numero;
-            DELETE FROM SanguePlus_Laboratorio WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Coletor = @Numero OR Dador = @Numero);
-            DELETE FROM SanguePlus_Bolsa WHERE Coletor = @Numero;
+            DELETE FROM SanguePlus_FichaMedica
+            WHERE NPaciente IN (SELECT NPaciente FROM SanguePlus_Paciente WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @Numero));
+            DELETE FROM SanguePlus_Paciente 
+            WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @Numero);
+            DELETE FROM SanguePlus_Laboratorio 
+            WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @Numero);
             DELETE FROM SanguePlus_Bolsa WHERE Dador = @Numero;
             DELETE FROM SanguePlus_CartaoDador WHERE NDador = @Numero;
             DELETE FROM SanguePlus_Dador WHERE NDador = @Numero;
             DELETE FROM SanguePlus_Staff WHERE NFuncionario = @Numero;
             DELETE FROM SanguePlus_Pessoa WHERE Numero = @Numero;
         END
-        IF @@ROWCOUNT = 0
-        BEGIN
-            ROLLBACK TRANSACTION;
-            SET @Status = 'Pessoa não encontrada';
-        END
         ELSE
         BEGIN
-            COMMIT TRANSACTION;
-            SET @Status = 'Pessoa removida';
+            IF EXISTS (SELECT 1 FROM SanguePlus_Pessoa WHERE Numero = @Numero)
+            BEGIN
+                DELETE FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero;
+                DELETE FROM SanguePlus_Paciente WHERE NPaciente = @Numero;
+                DELETE FROM SanguePlus_Staff WHERE NFuncionario = @Numero;
+                DELETE FROM SanguePlus_Pessoa WHERE Numero = @Numero;
+            END
+            ELSE
+            BEGIN
+                ROLLBACK TRANSACTION;
+                SET @Status = 'Pessoa não encontrada';
+                RETURN;
+            END
         END
+        COMMIT TRANSACTION;
+        SET @Status = 'Pessoa removida';
     END TRY
     BEGIN CATCH
         ROLLBACK TRANSACTION;
@@ -471,7 +481,17 @@ BEGIN
     BEGIN TRY
         IF LEFT(@Numero, 1) != 'P' OR LEN(@Numero) != 5 OR ISNUMERIC(SUBSTRING(@Numero, 2, LEN(@Numero) - 1)) = 0
         BEGIN
-            SET @Status = 'Numero invalido. Formarto valido [Pxxxx]';
+            SET @Status = 'Numero invalido. Formato valido [Pxxxx]';
+            RETURN;
+        END
+        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Tratador)
+        BEGIN
+            SET @Status = 'Tratador não encontrado';
+            RETURN;
+        END
+        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Bolsa WHERE ID = @BolsaRecebida)
+        BEGIN
+            SET @Status = 'BolsaRecebida não encontrada';
             RETURN;
         END
         IF NOT EXISTS (SELECT 1 FROM SanguePlus_Pessoa WHERE Numero = @Numero)
@@ -497,8 +517,7 @@ BEGIN
         END
     END TRY
     BEGIN CATCH
-        -- Handle error
-        SET @Status = 'Error: ' + ERROR_MESSAGE();
+        SET @Status = 'Erro: ' + ERROR_MESSAGE();
     END CATCH
 END
 GO
@@ -715,6 +734,8 @@ END
 GO
 --exec [dbo].[VerPessoas_Pacientes] @PessoaNum = 'Pxxxx'
 
+-------------------------------------VIEWS-------------------------------------
+
 CREATE VIEW VisaoLaboratorio AS
 SELECT ID,DataValidade,TipoSangue
 FROM 
@@ -740,6 +761,8 @@ FROM
 GO
 --SELECT * FROM VisaoBolsasTestadas;
 
+-------------------------------------TRIGGERS-------------------------------------
+
 CREATE TRIGGER TirarMedicoDaFicha
 ON SanguePlus_Medico
 AFTER DELETE
@@ -758,20 +781,26 @@ INSTEAD OF DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
+
     DECLARE @Numero varchar(255);
     DECLARE @NewEmissor varchar(255);
+
     SELECT @Numero = NMedico FROM deleted;
     SELECT TOP 1 @NewEmissor = NMedico
     FROM SanguePlus_Medico
     WHERE NMedico != @Numero;
+
     IF @NewEmissor IS NULL
     BEGIN
         RAISERROR('Erro: É preciso pelo menos um Medico registado', 16, 1);
         RETURN;
     END
+
     BEGIN TRY
         BEGIN TRANSACTION;
+        -- Update references
         UPDATE SanguePlus_FichaMedica SET Emissor = @NewEmissor WHERE Emissor = @Numero;
+        -- Perform deletions
         DELETE FROM SanguePlus_Medico WHERE NMedico = @Numero;
         DELETE FROM SanguePlus_Staff WHERE NFuncionario = @Numero;
         DELETE FROM SanguePlus_Pessoa WHERE Numero = @Numero;
@@ -790,17 +819,21 @@ INSTEAD OF DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
+
     DECLARE @Numero varchar(255);
     DECLARE @NewEnfermeiro varchar(255);
+
     SELECT @Numero = NEnfermeiro FROM deleted;
     SELECT TOP 1 @NewEnfermeiro = NEnfermeiro
     FROM SanguePlus_Enfermeiro
     WHERE NEnfermeiro != @Numero;
+
     IF @NewEnfermeiro IS NULL
     BEGIN
         RAISERROR('Erro: É preciso pelo menos um Enfermeiro registado', 16, 1);
         RETURN;
     END
+
     BEGIN TRY
         BEGIN TRANSACTION;
         UPDATE SanguePlus_Paciente SET Tratador = @NewEnfermeiro WHERE Tratador = @Numero;
@@ -840,12 +873,35 @@ GO
 
 CREATE TRIGGER ApagarDador
 ON SanguePlus_Dador
-AFTER DELETE
+INSTEAD OF DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
-    UPDATE SanguePlus_Paciente SET BolsaRecebida = NULL WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador IN (SELECT NDador FROM deleted));
-    DELETE FROM SanguePlus_Bolsa WHERE Dador IN (SELECT NDador FROM deleted);
-    DELETE FROM SanguePlus_Dador WHERE NDador IN (SELECT NDador FROM deleted);
+
+    DECLARE @NDador varchar(255);
+
+    SELECT @NDador = NDador FROM deleted;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        UPDATE SanguePlus_Paciente 
+        SET BolsaRecebida = NULL 
+        WHERE BolsaRecebida IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @NDador);
+
+        DELETE FROM SanguePlus_Laboratorio 
+        WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Dador = @NDador);
+
+        DELETE FROM SanguePlus_Bolsa WHERE Dador = @NDador;
+        DELETE FROM SanguePlus_CartaoDador WHERE NDador = @NDador;
+        DELETE FROM SanguePlus_Dador WHERE NDador = @NDador;
+        DELETE FROM SanguePlus_Staff WHERE NFuncionario = @NDador;
+        DELETE FROM SanguePlus_Pessoa WHERE Numero = @NDador;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
 END
 GO

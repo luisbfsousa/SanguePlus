@@ -227,53 +227,51 @@ GO  --corrigir EntidadeFornecedora!!!!!
 -- PRINT @Status;
 
 -----------Adiocionar Paciente e ficha medica-----------
-CREATE PROCEDURE [dbo].[RegistoPaciente_Ficha]
-    @Nome varchar(512),
-    @Numero varchar(512),
-    @Sexo varchar(512),
-    @Idade int,
-    @Contacto int,
-    @Tratador varchar(512),
-    @BolsaRecebida varchar(512),
-    @TipoSangue varchar(512),
-    @Diagnostico varchar(512) = NULL,
-    @Tratamento varchar(512) = NULL,
-    @Emissor varchar(512),
+CREATE PROCEDURE [dbo].[RemoverPessoa]
+    @Numero varchar(255),
     @Status varchar(512) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
+
     BEGIN TRY
-        IF LEFT(@Numero, 1) != 'P' OR LEN(@Numero) != 5 OR ISNUMERIC(SUBSTRING(@Numero, 2, LEN(@Numero) - 1)) = 0
+        BEGIN TRANSACTION;
+
+        IF EXISTS (SELECT 1 FROM SanguePlus_Medico WHERE NMedico = @Numero)
         BEGIN
-            SET @Status = 'Numero invalido. Formarto valido [Pxxxx]';
-            RETURN;
+            DELETE FROM SanguePlus_Medico WHERE NMedico = @Numero;
         END
-        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Pessoa WHERE Numero = @Numero)
+        ELSE IF EXISTS (SELECT 1 FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Numero)
         BEGIN
-            INSERT INTO SanguePlus_Pessoa (Nome, Numero, Sexo, Idade, Contacto)
-            VALUES (@Nome, @Numero, @Sexo, @Idade, @Contacto);
-        END
-        IF NOT EXISTS (SELECT 1 FROM SanguePlus_Paciente WHERE NPaciente = @Numero)
-        BEGIN
-            INSERT INTO SanguePlus_Paciente (NPaciente, Tratador, BolsaRecebida)
-            VALUES (@Numero, @Tratador, @BolsaRecebida);
-        END
-        IF NOT EXISTS (SELECT 1 FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero)
-        BEGIN
-            INSERT INTO SanguePlus_FichaMedica (NPaciente, TipoSangue, Diagnostico, Tratamento, Emissor)
-            VALUES (@Numero, @TipoSangue, ISNULL(@Diagnostico, ''), ISNULL(@Tratamento, ''), @Emissor);
-            SET @Status = 'Paciente registado e Ficha medica criada';
+            DELETE FROM SanguePlus_Enfermeiro WHERE NEnfermeiro = @Numero;
         END
         ELSE
         BEGIN
-            SET @Status = 'O paciente ja existe';
-            RETURN;
+            DELETE FROM SanguePlus_FichaMedica WHERE NPaciente = @Numero;
+            DELETE FROM SanguePlus_Paciente WHERE NPaciente = @Numero;
+            DELETE FROM SanguePlus_Laboratorio WHERE IDBolsa IN (SELECT ID FROM SanguePlus_Bolsa WHERE Coletor = @Numero OR Dador = @Numero);
+            DELETE FROM SanguePlus_Bolsa WHERE Coletor = @Numero;
+            DELETE FROM SanguePlus_Bolsa WHERE Dador = @Numero;
+            DELETE FROM SanguePlus_CartaoDador WHERE NDador = @Numero;
+            DELETE FROM SanguePlus_Dador WHERE NDador = @Numero;
+            DELETE FROM SanguePlus_Staff WHERE NFuncionario = @Numero;
+            DELETE FROM SanguePlus_Pessoa WHERE Numero = @Numero;
+        END
+
+        IF @@ROWCOUNT = 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+            SET @Status = 'Pessoa não encontrada';
+        END
+        ELSE
+        BEGIN
+            COMMIT TRANSACTION;
+            SET @Status = 'Pessoa removida';
         END
     END TRY
     BEGIN CATCH
-        -- Handle error
-        SET @Status = 'Error: ' + ERROR_MESSAGE();
+        ROLLBACK TRANSACTION;
+        SET @Status = 'Erro: ' + ERROR_MESSAGE();
     END CATCH
 END
 GO
