@@ -39,8 +39,7 @@ Estes tratam-se de: <br />
 Note-se que os dois primeiros views foram feitos a pensar num layout específico da interface que mais tarde foi feito de outra forma. O ultimo view nao foi usado pois na pesquisa das pessoas global ja aparece o numero do medico e toda a informacao associada a este tirando a password encriptada.
 
 ## Notas
-Não foi possivel submeter o video devido ao limite de 50Mb pelo elearning, aqui esta um link para aceder: https://uapt33090-my.sharepoint.com/:v:/g/personal/luisbfsousa_ua_pt/ET22iS49zPxKtPCy2p0m2zYBgE4amKWNAidpy0a68MwXZQ?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0NvcHkifX0&e=luqwHB
-
+Não foi possivel submeter o video devido ao limite de 50Mb pelo elearning, aqui esta um link para aceder: ... <br />
 A submissao com o video incluido foi enviado por email para o professor Joaquim Sousa Pinto (jsp@ua.pt)
 
 | Nmedico | Password |
