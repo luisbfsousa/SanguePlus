@@ -1,5 +1,5 @@
 ## Projeto de Base de Dados
-![](Table.png)
+![](Tables.png)
 
 ## Intro
 O projeto por nós desenolvido foi um sistema para uma clinica no âmbito da disciplina de Base de Dados.
